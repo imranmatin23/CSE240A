@@ -35,6 +35,7 @@ int verbose;
 //------------------------------------//
 
 // Define the size of the PHT, i.e. how many entries in the table.
+// TODO: Is this defined in the writeup? Is there specific value we need to use?
 #define PHT_SIZE 1024
 // Declare the PHT.
 int PHT[PHT_SIZE];
