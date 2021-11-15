@@ -94,11 +94,12 @@ update_state(int state, int outcome)
 //             gshare                 //
 //------------------------------------//
 
-// Initialize a PHT of size PHT_SIZE and set each 2-bit counter to WN.
+// 1. Initialize a PHT of size PHT_SIZE and set each 2-bit counter to WN.
 // 
 void 
 init_gshare() 
 {
+  // Initialize the PHT.
   for(int i = 0; i < PHT_SIZE; ++i) {
      PHT[i] = WN;
   }
@@ -118,6 +119,10 @@ predict_gshare(uint32_t pc)
   return prediction;
 }
 
+// 1. Execute GHR XOR PC.
+// 2. Mod the result and the PHT_SIZE.
+// 3. Extract the state in the PHT for this PC.
+// 4. Update the state in the PHT based on the outcome.
 void
 train_gshare(uint32_t pc, uint8_t outcome)
 {
