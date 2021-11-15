@@ -14,5 +14,5 @@ clean:
 	rm -f *.o predictor;
 
 .PHONY: test
-test:
+test: all
 	bunzip2 -kc ../traces/int_1.bz2 | ./predictor --static
