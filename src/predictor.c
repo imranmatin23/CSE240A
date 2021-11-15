@@ -107,6 +107,20 @@ combine_ghr_and_pc(uint32_t pc)
   return combined_and_masked;
 }
 
+int
+get_state_from_PHT(int address)
+{
+  int index = address % PHT_SIZE;
+  int state = PHT[index];
+  return state;
+}
+
+void 
+update_state_in_PHT(int address, int new_state) {
+    int index = address % PHT_SIZE;
+    PHT[index] = new_state;
+}
+
 // Updates the GHR with the latest branch outcome.
 // 1. Shifts the GHR left by 1 bit and fills the LSB with 0.
 // 2. Executes GHR OR outcome to insert the outcome into the LSB of GHR.
@@ -140,8 +154,7 @@ uint8_t
 predict_gshare(uint32_t pc) 
 {
   int combined = combine_ghr_and_pc(pc);
-  int index = combined % PHT_SIZE;
-  int state = PHT[index];
+  int state = get_state_from_PHT(combined);
   int prediction = get_prediction_from_state(state);
   return prediction;
 }
@@ -154,10 +167,9 @@ void
 train_gshare(uint32_t pc, uint8_t outcome)
 {
   int combined = combine_ghr_and_pc(pc);
-  int index = combined % PHT_SIZE;
-  int current_state = PHT[index];
+  int current_state = get_state_from_PHT(combined);
   int new_state = update_state(current_state, outcome);
-  PHT[index] = new_state;
+  update_state_in_PHT(combined, new_state);
   update_ghr(outcome);
 }
 
