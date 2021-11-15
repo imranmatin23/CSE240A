@@ -12,3 +12,7 @@ predictor.o: predictor.h predictor.c
 
 clean:
 	rm -f *.o predictor;
+
+.PHONY: test
+test:
+	bunzip2 -kc ../traces/int_1.bz2 | ./predictor --static
