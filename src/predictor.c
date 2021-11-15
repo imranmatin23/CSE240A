@@ -6,6 +6,7 @@
 //  described in the README                               //
 //========================================================//
 #include <stdio.h>
+#include <math.h>
 #include "predictor.h"
 
 //
@@ -37,6 +38,8 @@ int verbose;
 #define PHT_SIZE 1024
 // Declare the PHT.
 int PHT[PHT_SIZE];
+// Declare the GHR
+uint32_t GHR;
 
 //------------------------------------//
 //        Helper Functions            //
@@ -52,47 +55,68 @@ print_PHT()
   printf("\n");
 }
 
+void
+print_ghr()
+{
+  int mask = pow(2, ghistoryBits) - 1;
+  printf("GHR: %lu\n", (unsigned long) (GHR & mask));
+}
+
 int
 increment_state(int state)
 {
-  if (state == ST) {
-    return state;
-  }
+  if (state == ST) { return state; }
   return state + 1;
 }
 
 int
 decrement_state(int state)
 {
-  if (state == SN) {
-    return state;
-  }
+  if (state == SN) { return state; }
   return state - 1;
 }
 
 int
 get_prediction_from_state(int state)
 {
-  if (state == SN || state == WN) { return NOTTAKEN;} 
-  else if (state == WT || state == ST) { return TAKEN; }
+  if (state == SN || state == WN) { return NOTTAKEN; } 
+  return TAKEN;
 }
 
 int 
 update_state(int state, int outcome) 
 {
-  if (outcome == TAKEN) {
-    return increment_state(state);
-  } 
-  else if (outcome == NOTTAKEN) 
-  {
-    return decrement_state(state);
-  }
+  if (outcome == TAKEN) { return increment_state(state); } 
+  return decrement_state(state);
 }
-
 
 //------------------------------------//
 //             gshare                 //
 //------------------------------------//
+
+// Combines the GHR and PC using the XOR operation.
+// 1. Executes GHR XOR PC
+// 2. Uses the a mask of (2^ghistoryBits)-1 to select the desired combined bits.
+// 
+int
+combine_ghr_and_pc(uint32_t pc)
+{
+  int combined = GHR ^ pc;
+  int mask = pow(2, ghistoryBits) - 1;
+  int combined_and_masked = combined & mask;
+  return combined_and_masked;
+}
+
+// Updates the GHR with the latest branch outcome.
+// 1. Shifts the GHR left by 1 bit and fills the LSB with 0.
+// 2. Executes GHR OR outcome to insert the outcome into the LSB of GHR.
+void
+update_ghr(uint8_t outcome) {
+  // shift GHR over by 1 bit
+  GHR = GHR << 1;
+  // insert new outcome
+  GHR = GHR | outcome;
+}
 
 // 1. Initialize a PHT of size PHT_SIZE and set each 2-bit counter to WN.
 // 
@@ -103,6 +127,8 @@ init_gshare()
   for(int i = 0; i < PHT_SIZE; ++i) {
      PHT[i] = WN;
   }
+  // Initialize the GHR.
+  GHR = 0;
 }
 
 // Make a prediction using the gshare predictor.
@@ -113,7 +139,8 @@ init_gshare()
 uint8_t 
 predict_gshare(uint32_t pc) 
 {
-  int index = pc % PHT_SIZE;
+  int combined = combine_ghr_and_pc(pc);
+  int index = combined % PHT_SIZE;
   int state = PHT[index];
   int prediction = get_prediction_from_state(state);
   return prediction;
@@ -126,10 +153,12 @@ predict_gshare(uint32_t pc)
 void
 train_gshare(uint32_t pc, uint8_t outcome)
 {
-  int index = pc % PHT_SIZE;
+  int combined = combine_ghr_and_pc(pc);
+  int index = combined % PHT_SIZE;
   int current_state = PHT[index];
   int new_state = update_state(current_state, outcome);
   PHT[index] = new_state;
+  update_ghr(outcome);
 }
 
 //------------------------------------//
