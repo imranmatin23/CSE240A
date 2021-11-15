@@ -6,5 +6,5 @@ TAG = latest
 run:
 	docker run --rm -it --entrypoint=bash \
 	-v $(shell pwd):$(MOUNT_POINT) \
-	-w $(MOUNT_POINT) \
+	-w $(MOUNT_POINT)/src \
 	$(NAME):$(TAG)
