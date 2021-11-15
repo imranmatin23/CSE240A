@@ -9,7 +9,7 @@
 #include "predictor.h"
 
 //
-// TODO:Student Information
+// Student Information
 //
 const char *studentName = "Imran Matin";
 const char *studentID   = "A14473033";
@@ -30,13 +30,102 @@ int bpType;       // Branch Prediction Type
 int verbose;
 
 //------------------------------------//
-//      Predictor Data Structures     //
+//             constants              //
 //------------------------------------//
 
-//
-//TODO: Add your own Branch Predictor data structures here
-//
+// Define the size of the PHT, i.e. how many entries in the table.
+#define PHT_SIZE 1024
+// Declare the PHT.
+int PHT[PHT_SIZE];
 
+//------------------------------------//
+//        Helper Functions            //
+//------------------------------------//
+
+void
+print_PHT() 
+{
+  printf("PHT: ");
+  for(int i = 0; i < PHT_SIZE; ++i) {
+     printf("%d", PHT[i]);
+  }
+  printf("\n");
+}
+
+int
+increment_state(int state)
+{
+  if (state == ST) {
+    return state;
+  }
+  return state + 1;
+}
+
+int
+decrement_state(int state)
+{
+  if (state == SN) {
+    return state;
+  }
+  return state - 1;
+}
+
+int
+get_prediction_from_state(int state)
+{
+  if (state == SN || state == WN) { return NOTTAKEN;} 
+  else if (state == WT || state == ST) { return TAKEN; }
+}
+
+int 
+update_state(int state, int outcome) 
+{
+  if (outcome == TAKEN) {
+    return increment_state(state);
+  } 
+  else if (outcome == NOTTAKEN) 
+  {
+    return decrement_state(state);
+  }
+}
+
+
+//------------------------------------//
+//             gshare                 //
+//------------------------------------//
+
+// Initialize a PHT of size PHT_SIZE and set each 2-bit counter to WN.
+// 
+void 
+init_gshare() 
+{
+  for(int i = 0; i < PHT_SIZE; ++i) {
+     PHT[i] = WN;
+  }
+}
+
+// Make a prediction using the gshare predictor.
+// 1. Mod the PC and the PHT_SIZE.
+// 2. Extract the state in the PHT for this PC.
+// 3. Predict based on the state in the PHT.
+// 
+uint8_t 
+predict_gshare(uint32_t pc) 
+{
+  int index = pc % PHT_SIZE;
+  int state = PHT[index];
+  int prediction = get_prediction_from_state(state);
+  return prediction;
+}
+
+void
+train_gshare(uint32_t pc, uint8_t outcome)
+{
+  int index = pc % PHT_SIZE;
+  int current_state = PHT[index];
+  int new_state = update_state(current_state, outcome);
+  PHT[index] = new_state;
+}
 
 //------------------------------------//
 //        Predictor Functions         //
@@ -47,9 +136,15 @@ int verbose;
 void
 init_predictor()
 {
-  //
-  //TODO: Initialize Branch Predictor Data Structures
-  //
+  switch (bpType) {
+    case STATIC:
+    case GSHARE:
+      init_gshare();
+    case TOURNAMENT:
+    case CUSTOM:
+    default:
+      break;
+  }
 }
 
 // Make a prediction for conditional branch instruction at PC 'pc'
@@ -59,15 +154,12 @@ init_predictor()
 uint8_t
 make_prediction(uint32_t pc)
 {
-  //
-  //TODO: Implement prediction scheme
-  //
-
   // Make a prediction based on the bpType
   switch (bpType) {
     case STATIC:
       return TAKEN;
     case GSHARE:
+      return predict_gshare(pc);
     case TOURNAMENT:
     case CUSTOM:
     default:
@@ -85,7 +177,13 @@ make_prediction(uint32_t pc)
 void
 train_predictor(uint32_t pc, uint8_t outcome)
 {
-  //
-  //TODO: Implement Predictor training
-  //
+  switch (bpType) {
+    case STATIC:
+    case GSHARE:
+      train_gshare(pc, outcome);
+    case TOURNAMENT:
+    case CUSTOM:
+    default:
+      break;
+  }
 }

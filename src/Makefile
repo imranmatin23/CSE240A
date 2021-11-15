@@ -15,4 +15,4 @@ clean:
 
 .PHONY: test
 test: all
-	bunzip2 -kc ../traces/int_1.bz2 | ./predictor --static
+	bunzip2 -kc ../traces/int_1.bz2 | ./predictor --gshare:10
