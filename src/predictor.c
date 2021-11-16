@@ -66,69 +66,57 @@ get_prediction_from_state(int state)
 //             gshare                 //
 //------------------------------------//
 
-#define PHT_SIZE 1024
-int PHT[PHT_SIZE];
-uint32_t GHR;
+#define PATTERN_HISTORY_TABLE_SIZE 1024
+uint32_t pattern_history_table[PATTERN_HISTORY_TABLE_SIZE];
+uint32_t gshare_ghr;
 
 int
 combine_ghr_and_pc(uint32_t pc)
 {
-  int combined = GHR ^ pc;
+  int combined = gshare_ghr ^ pc;
   int mask = pow(2, ghistoryBits) - 1;
   int combined_and_masked = combined & mask;
   return combined_and_masked;
 }
 
-int
-get_state_from_PHT(int address)
+void
+train_gshare_PHT(uint32_t pc, uint8_t outcome)
 {
-  int index = address % PHT_SIZE;
-  int state = PHT[index];
-  return state;
-}
-
-void 
-get_new_state_in_PHT(int address, int new_state) {
-    int index = address % PHT_SIZE;
-    PHT[index] = new_state;
+  int index = combine_ghr_and_pc(pc);
+  int modded_index = index % PATTERN_HISTORY_TABLE_SIZE;
+  int current_state = pattern_history_table[modded_index];
+  int new_state = get_new_state(current_state, outcome);
+  pattern_history_table[modded_index] = new_state;
 }
 
 void
-update_ghr(uint8_t outcome) {
-  // shift GHR over by 1 bit
-  GHR = GHR << 1;
-  // insert new outcome
-  GHR = GHR | outcome;
+train_gshare_ghr(uint8_t outcome) {
+  gshare_ghr = (gshare_ghr << 1) | outcome;
 }
 
 void 
 init_gshare() 
 {
-  // Initialize the PHT.
-  for(int i = 0; i < PHT_SIZE; ++i) {
-     PHT[i] = WN;
+  for(int i = 0; i < PATTERN_HISTORY_TABLE_SIZE; ++i) {
+     pattern_history_table[i] = WN;
   }
-  // Initialize the GHR.
-  GHR = 0;
+  gshare_ghr = 0;
 }
 
 uint8_t 
 predict_gshare(uint32_t pc) 
 {
-  int combined = combine_ghr_and_pc(pc);
-  int state = get_state_from_PHT(combined);
-  int prediction = get_prediction_from_state(state);
-  return prediction;
+  int index = combine_ghr_and_pc(pc);
+  int modded_index = index % PATTERN_HISTORY_TABLE_SIZE;
+  int current_state = pattern_history_table[modded_index];
+  return get_prediction_from_state(current_state);
 }
 
 void
 train_gshare(uint32_t pc, uint8_t outcome)
 {
-  int combined = combine_ghr_and_pc(pc);
-  int current_state = get_state_from_PHT(combined);
-  int new_state = get_new_state(current_state, outcome);
-  get_new_state_in_PHT(combined, new_state);
-  update_ghr(outcome);
+  train_gshare_PHT(pc, outcome);
+  train_gshare_ghr(outcome);
 }
 
 //------------------------------------//
