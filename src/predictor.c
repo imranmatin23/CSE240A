@@ -70,19 +70,17 @@ get_prediction_from_state(int state)
 uint32_t pattern_history_table[PATTERN_HISTORY_TABLE_SIZE];
 uint32_t gshare_ghr;
 
-int
-combine_ghr_and_pc(uint32_t pc)
-{
-  int combined = gshare_ghr ^ pc;
-  int mask = pow(2, ghistoryBits) - 1;
-  int combined_and_masked = combined & mask;
-  return combined_and_masked;
+uint32_t
+get_gshare_ghr() {
+  uint32_t mask = pow(2, ghistoryBits) - 1;
+  uint32_t masked_ghr = gshare_ghr & mask;
+  return masked_ghr;
 }
 
 void
 train_gshare_PHT(uint32_t pc, uint8_t outcome)
 {
-  int index = combine_ghr_and_pc(pc);
+  int index = get_gshare_ghr() ^ pc;
   int modded_index = index % PATTERN_HISTORY_TABLE_SIZE;
   int current_state = pattern_history_table[modded_index];
   int new_state = get_new_state(current_state, outcome);
@@ -106,7 +104,7 @@ init_gshare()
 uint8_t 
 predict_gshare(uint32_t pc) 
 {
-  int index = combine_ghr_and_pc(pc);
+  int index = get_gshare_ghr() ^ pc;
   int modded_index = index % PATTERN_HISTORY_TABLE_SIZE;
   int current_state = pattern_history_table[modded_index];
   return get_prediction_from_state(current_state);
@@ -117,6 +115,162 @@ train_gshare(uint32_t pc, uint8_t outcome)
 {
   train_gshare_PHT(pc, outcome);
   train_gshare_ghr(outcome);
+}
+
+//------------------------------------//
+//         tournament                 //
+//------------------------------------//
+
+#define CHOICE_PREDICT_SIZE 4096
+#define GLOBAL_PREDICT_SIZE 4096
+#define LOCAL_HISTORY_TABLE_SIZE 1024
+#define LOCAL_PREDICT_SIZE 1024
+uint32_t choice_predict[CHOICE_PREDICT_SIZE];
+uint32_t global_predict[GLOBAL_PREDICT_SIZE];
+uint32_t local_history_table[LOCAL_HISTORY_TABLE_SIZE];
+uint32_t local_predict[LOCAL_PREDICT_SIZE];
+uint32_t tournament_ghr;
+
+uint32_t
+get_tournament_ghr() {
+  uint32_t mask = pow(2, ghistoryBits) - 1;
+  uint32_t masked_ghr = tournament_ghr & mask;
+  return masked_ghr;
+}
+
+uint32_t
+get_local_history_table_index_from_pc(uint32_t pc) {
+  uint32_t mask = pow(2, pcIndexBits) - 1;
+  uint32_t masked_pc = pc & mask;
+  return masked_pc % LOCAL_HISTORY_TABLE_SIZE;
+}
+
+uint32_t
+get_local_predict_index_from_local_history_table(uint32_t index)
+{
+  uint32_t local_predict_index = local_history_table[index];
+  uint32_t mask = pow(2, lhistoryBits) - 1;
+  uint32_t masked_local_predict_index = local_predict_index & mask;
+  return masked_local_predict_index % LOCAL_PREDICT_SIZE;
+}
+
+uint8_t 
+predict_tournament_local(uint32_t pc)
+{
+  uint32_t local_history_table_index = get_local_history_table_index_from_pc(pc);
+  uint32_t local_predict_index = get_local_predict_index_from_local_history_table(local_history_table_index);
+  int current_state = local_predict[local_predict_index];
+  return get_prediction_from_state(current_state);
+}
+
+uint8_t 
+predict_tournament_global(uint32_t pc)
+{
+  uint32_t index = get_tournament_ghr();
+  uint32_t modded_index = index % GLOBAL_PREDICT_SIZE;
+  int current_state = global_predict[modded_index];
+  return get_prediction_from_state(current_state);
+}
+
+uint8_t
+predict_tournament_select_prediction(uint8_t local_prediction, uint8_t global_prediction)
+{
+  uint32_t index = get_tournament_ghr();
+  uint32_t modded_index = index % CHOICE_PREDICT_SIZE;
+  int current_state = choice_predict[modded_index];
+  int predictor = get_prediction_from_state(current_state);
+  if (predictor == 0) {
+    return local_prediction;
+  }
+  return global_prediction;
+}
+
+void
+train_tournament_global_predict(uint8_t outcome)
+{
+  uint32_t index = get_tournament_ghr();
+  uint32_t modded_index = index % GLOBAL_PREDICT_SIZE;
+  int current_state = global_predict[modded_index];
+  int new_state = get_new_state(current_state, outcome);
+  global_predict[modded_index] = new_state;
+}
+
+void
+train_tournament_local_predict(uint32_t pc, uint8_t outcome)
+{
+  uint32_t local_history_table_index = get_local_history_table_index_from_pc(pc);
+  uint32_t local_predict_index = get_local_predict_index_from_local_history_table(local_history_table_index);
+  int current_state = local_predict[local_predict_index];
+  int new_state = get_new_state(current_state, outcome);
+  local_predict[local_predict_index] = new_state;
+}
+
+void
+train_tournament_local_history_table(uint32_t pc, uint8_t outcome)
+{
+  uint32_t local_history_table_index = get_local_history_table_index_from_pc(pc);
+  uint32_t current_state = local_history_table[local_history_table_index];
+  int new_state = (current_state << 1) | outcome;
+  local_history_table[local_history_table_index] = new_state;
+}
+
+void
+train_tournament_ghr(uint8_t outcome)
+{
+  tournament_ghr = (tournament_ghr << 1) | outcome;
+}
+
+void
+train_tournament_choice_predict(uint32_t pc, uint8_t outcome)
+{
+  int new_state;
+  int local_prediction = predict_tournament_local(pc);
+  int global_prediction = predict_tournament_global(pc);
+  uint32_t index = get_tournament_ghr();
+  uint32_t modded_index = index % CHOICE_PREDICT_SIZE;
+  int current_state = choice_predict[modded_index];
+  if (local_prediction == outcome) {
+    new_state = decrement_state(current_state);
+  } else {
+    new_state = increment_state(current_state);
+  }
+  choice_predict[modded_index] = new_state;
+}
+
+void 
+init_tournament() 
+{
+  for (int i = 0; i < CHOICE_PREDICT_SIZE; i++) {
+     choice_predict[i] = WN;
+  }
+  for (int i = 0; i < GLOBAL_PREDICT_SIZE; i++) {
+     global_predict[i] = WN;
+  }
+  for (int i = 0; i < LOCAL_HISTORY_TABLE_SIZE; i++) {
+     local_history_table[i] = 0;
+  }
+  for (int i = 0; i < LOCAL_PREDICT_SIZE; i++) {
+     local_predict[i] = WN;
+  }
+  tournament_ghr = 0;
+}
+
+uint8_t 
+predict_tournament(uint32_t pc) 
+{
+  int local_prediction = predict_tournament_local(pc);
+  int global_prediction = predict_tournament_global(pc);
+  return predict_tournament_select_prediction(local_prediction, global_prediction);
+}
+
+void
+train_tournament(uint32_t pc, uint8_t outcome)
+{
+  train_tournament_global_predict(outcome);
+  train_tournament_choice_predict(pc, outcome);
+  train_tournament_local_predict(pc, outcome);
+  train_tournament_local_history_table(pc, outcome);
+  train_tournament_ghr(outcome);
 }
 
 //------------------------------------//
@@ -133,7 +287,7 @@ init_predictor()
     case GSHARE:
       init_gshare();
     case TOURNAMENT:
-      // init_tournament();
+      init_tournament();
     case CUSTOM:
     default:
       break;
@@ -154,7 +308,7 @@ make_prediction(uint32_t pc)
     case GSHARE:
       return predict_gshare(pc);
     case TOURNAMENT:
-      // return predict_tournament(pc);
+      return predict_tournament(pc);
     case CUSTOM:
     default:
       break;
@@ -176,7 +330,7 @@ train_predictor(uint32_t pc, uint8_t outcome)
     case GSHARE:
       train_gshare(pc, outcome);
     case TOURNAMENT:
-      // train_tournament(pc, outcome);
+      train_tournament(pc, outcome);
     case CUSTOM:
     default:
       break;
