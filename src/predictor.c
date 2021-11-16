@@ -34,6 +34,9 @@ int verbose;
 //       State Helper Functions       //
 //------------------------------------//
 
+// Increments the state, and doesn't increment the state if it is the highest
+// state already.
+// 
 int
 increment_state(int state)
 {
@@ -41,6 +44,9 @@ increment_state(int state)
   return state + 1;
 }
 
+// Decrements the state, and doesn't decrement the state if it is the lowest
+// state already.
+// 
 int
 decrement_state(int state)
 {
@@ -48,6 +54,8 @@ decrement_state(int state)
   return state - 1;
 }
 
+// Computes the new state based of the current state and the outcome.
+// 
 int 
 get_new_state(int state, int outcome) 
 {
@@ -55,6 +63,8 @@ get_new_state(int state, int outcome)
   return decrement_state(state);
 }
 
+// Computes the prediction from the state.
+// 
 uint8_t
 get_prediction_from_state(int state)
 {
@@ -66,32 +76,45 @@ get_prediction_from_state(int state)
 //             gshare                 //
 //------------------------------------//
 
+// NOTE: Does this change?
 #define PATTERN_HISTORY_TABLE_SIZE 1024
 uint32_t pattern_history_table[PATTERN_HISTORY_TABLE_SIZE];
 uint32_t gshare_ghr;
 
+// Returns the the pattern history table index by performing
+// ( (gshare_ghr ^ pc) & ((2^ghistoryBits)-1) ) % PHT_SIZE. This ensures that only
+// ghistoryBits are used. NOTE: Computes the index by modding by the
+// PHT size, is this correct?
+// 
 uint32_t
-get_gshare_ghr() {
+get_pattern_history_table_index(uint32_t pc)
+{
   uint32_t mask = pow(2, ghistoryBits) - 1;
-  uint32_t masked_ghr = gshare_ghr & mask;
-  return masked_ghr;
+  return ((gshare_ghr ^ pc) & mask) % PATTERN_HISTORY_TABLE_SIZE;
 }
 
+// Computes the index in the PHT for this PC, and updates the state at that
+// index based on the true outcome. 
+// 
 void
 train_gshare_PHT(uint32_t pc, uint8_t outcome)
 {
-  int index = get_gshare_ghr() ^ pc;
-  int modded_index = index % PATTERN_HISTORY_TABLE_SIZE;
-  int current_state = pattern_history_table[modded_index];
+  int index = get_pattern_history_table_index(pc);
+  int current_state = pattern_history_table[index];
   int new_state = get_new_state(current_state, outcome);
-  pattern_history_table[modded_index] = new_state;
+  pattern_history_table[index] = new_state;
 }
 
+// Updates the gshare_ghr by shifting it by one bit then ORing it with the 
+// true outcome. i.e. (gshare_ghr << 1) | outcome
 void
 train_gshare_ghr(uint8_t outcome) {
   gshare_ghr = (gshare_ghr << 1) | outcome;
 }
 
+// Initialize all entries of the Pattern History table to WN and the gshare_ghr
+// to 0.
+// 
 void 
 init_gshare() 
 {
@@ -101,15 +124,19 @@ init_gshare()
   gshare_ghr = 0;
 }
 
+// Gets the prediction for this PC. It first computes the index in the PHT 
+// from the PC. It then computes the prediction from the state at that index.
+// 
 uint8_t 
 predict_gshare(uint32_t pc) 
 {
-  int index = get_gshare_ghr() ^ pc;
-  int modded_index = index % PATTERN_HISTORY_TABLE_SIZE;
-  int current_state = pattern_history_table[modded_index];
+  int index = get_pattern_history_table_index(pc);
+  int current_state = pattern_history_table[index];
   return get_prediction_from_state(current_state);
 }
 
+// Trains the gshare predictor by training the PHT and the GHR.
+// 
 void
 train_gshare(uint32_t pc, uint8_t outcome)
 {
