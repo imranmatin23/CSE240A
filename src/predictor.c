@@ -188,6 +188,7 @@ init_predictor()
     case GSHARE:
       init_gshare();
     case TOURNAMENT:
+      init_tournament();
     case CUSTOM:
     default:
       break;
@@ -208,6 +209,7 @@ make_prediction(uint32_t pc)
     case GSHARE:
       return predict_gshare(pc);
     case TOURNAMENT:
+      return predict_tournament(pc);
     case CUSTOM:
     default:
       break;
@@ -229,6 +231,7 @@ train_predictor(uint32_t pc, uint8_t outcome)
     case GSHARE:
       train_gshare(pc, outcome);
     case TOURNAMENT:
+      train_tournament(pc, outcome);
     case CUSTOM:
     default:
       break;
