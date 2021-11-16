@@ -1,8 +1,10 @@
 CC=gcc
 OPTS=-g -std=c99 -Werror
 
+# NOTE: I had to move the -lm flag to the end to get my code to compile with
+# the math function pow for some reason.
 all: main.o predictor.o
-	$(CC) $(OPTS) -lm -o predictor main.o predictor.o
+	$(CC) $(OPTS) -o predictor main.o predictor.o -lm
 
 main.o: main.c predictor.h
 	$(CC) $(OPTS) -c main.c

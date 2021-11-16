@@ -6,14 +6,15 @@
 //  described in the README                               //
 //========================================================//
 #include <stdio.h>
+#include <math.h>
 #include "predictor.h"
 
 //
-// TODO:Student Information
+// Student Information
 //
-const char *studentName = "NAME";
-const char *studentID   = "PID";
-const char *email       = "EMAIL";
+const char *studentName = "Imran Matin";
+const char *studentID   = "A14473033";
+const char *email       = "imatin@ucsd.edu";
 
 //------------------------------------//
 //      Predictor Configuration       //
@@ -419,15 +420,12 @@ init_predictor()
 uint8_t
 make_prediction(uint32_t pc)
 {
-  //
-  //TODO: Implement prediction scheme
-  //
-
   // Make a prediction based on the bpType
   switch (bpType) {
     case STATIC:
       return TAKEN;
     case GSHARE:
+      return predict_gshare(pc);
     case TOURNAMENT:
       return predict_tournament(pc);
     case CUSTOM:
