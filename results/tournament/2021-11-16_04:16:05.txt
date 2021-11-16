@@ -1,0 +1,35 @@
+Testing the tournament predictor on all test files...
+ghistoryBits = 9
+lhistoryBits = 10
+pcIndexBits = 10
+---------------------------
+Test File: ../traces/fp_1.bz2
+Branches:           1546797
+Incorrect:            16618
+Misprediction Rate:   1.074
+---------------------------
+Test File: ../traces/fp_2.bz2
+Branches:           2422049
+Incorrect:            76932
+Misprediction Rate:   3.176
+---------------------------
+Test File: ../traces/int_1.bz2
+Branches:           3771697
+Incorrect:           533353
+Misprediction Rate:  14.141
+---------------------------
+Test File: ../traces/int_2.bz2
+Branches:           3755315
+Incorrect:            17202
+Misprediction Rate:   0.458
+---------------------------
+Test File: ../traces/mm_1.bz2
+Branches:           3014850
+Incorrect:           106534
+Misprediction Rate:   3.534
+---------------------------
+Test File: ../traces/mm_2.bz2
+Branches:           2563897
+Incorrect:           227692
+Misprediction Rate:   8.881
+---------------------------
