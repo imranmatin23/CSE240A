@@ -15,6 +15,6 @@ echo "---------------------------" >> $path_to_outfile
 
 for filename in ../traces/*; do
     echo "Test File: ${filename}" >> $path_to_outfile
-    bunzip2 -kc $filename | ./../src/predictor --tournament:$GHISTORYBITS:$LHISTORYBITS:PCINDEXBITS >> $path_to_outfile
+    bunzip2 -kc $filename | ./../src/predictor --tournament:$GHISTORYBITS:$LHISTORYBITS:$PCINDEXBITS >> $path_to_outfile
     echo "---------------------------" >> $path_to_outfile
 done
