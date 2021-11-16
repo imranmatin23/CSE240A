@@ -31,37 +31,8 @@ int bpType;       // Branch Prediction Type
 int verbose;
 
 //------------------------------------//
-//             constants              //
+//       State Helper Functions       //
 //------------------------------------//
-
-// Define the size of the PHT, i.e. how many entries in the table.
-// TODO: Is this defined in the writeup? Is there specific value we need to use?
-#define PHT_SIZE 1024
-// Declare the PHT.
-int PHT[PHT_SIZE];
-// Declare the GHR
-uint32_t GHR;
-
-//------------------------------------//
-//        Helper Functions            //
-//------------------------------------//
-
-void
-print_PHT() 
-{
-  printf("PHT: ");
-  for(int i = 0; i < PHT_SIZE; ++i) {
-     printf("%d", PHT[i]);
-  }
-  printf("\n");
-}
-
-void
-print_ghr()
-{
-  int mask = pow(2, ghistoryBits) - 1;
-  printf("GHR: %lu\n", (unsigned long) (GHR & mask));
-}
 
 int
 increment_state(int state)
@@ -77,28 +48,28 @@ decrement_state(int state)
   return state - 1;
 }
 
-int
+int 
+get_new_state(int state, int outcome) 
+{
+  if (outcome == TAKEN) { return increment_state(state); } 
+  return decrement_state(state);
+}
+
+uint8_t
 get_prediction_from_state(int state)
 {
   if (state == SN || state == WN) { return NOTTAKEN; } 
   return TAKEN;
 }
 
-int 
-update_state(int state, int outcome) 
-{
-  if (outcome == TAKEN) { return increment_state(state); } 
-  return decrement_state(state);
-}
-
 //------------------------------------//
 //             gshare                 //
 //------------------------------------//
 
-// Combines the GHR and PC using the XOR operation.
-// 1. Executes GHR XOR PC
-// 2. Uses the a mask of (2^ghistoryBits)-1 to select the desired combined bits.
-// 
+#define PHT_SIZE 1024
+int PHT[PHT_SIZE];
+uint32_t GHR;
+
 int
 combine_ghr_and_pc(uint32_t pc)
 {
@@ -117,14 +88,11 @@ get_state_from_PHT(int address)
 }
 
 void 
-update_state_in_PHT(int address, int new_state) {
+get_new_state_in_PHT(int address, int new_state) {
     int index = address % PHT_SIZE;
     PHT[index] = new_state;
 }
 
-// Updates the GHR with the latest branch outcome.
-// 1. Shifts the GHR left by 1 bit and fills the LSB with 0.
-// 2. Executes GHR OR outcome to insert the outcome into the LSB of GHR.
 void
 update_ghr(uint8_t outcome) {
   // shift GHR over by 1 bit
@@ -133,8 +101,6 @@ update_ghr(uint8_t outcome) {
   GHR = GHR | outcome;
 }
 
-// 1. Initialize a PHT of size PHT_SIZE and set each 2-bit counter to WN.
-// 
 void 
 init_gshare() 
 {
@@ -146,11 +112,6 @@ init_gshare()
   GHR = 0;
 }
 
-// Make a prediction using the gshare predictor.
-// 1. Mod the PC and the PHT_SIZE.
-// 2. Extract the state in the PHT for this PC.
-// 3. Predict based on the state in the PHT.
-// 
 uint8_t 
 predict_gshare(uint32_t pc) 
 {
@@ -160,17 +121,13 @@ predict_gshare(uint32_t pc)
   return prediction;
 }
 
-// 1. Execute GHR XOR PC.
-// 2. Mod the result and the PHT_SIZE.
-// 3. Extract the state in the PHT for this PC.
-// 4. Update the state in the PHT based on the outcome.
 void
 train_gshare(uint32_t pc, uint8_t outcome)
 {
   int combined = combine_ghr_and_pc(pc);
   int current_state = get_state_from_PHT(combined);
-  int new_state = update_state(current_state, outcome);
-  update_state_in_PHT(combined, new_state);
+  int new_state = get_new_state(current_state, outcome);
+  get_new_state_in_PHT(combined, new_state);
   update_ghr(outcome);
 }
 
@@ -188,7 +145,7 @@ init_predictor()
     case GSHARE:
       init_gshare();
     case TOURNAMENT:
-      init_tournament();
+      // init_tournament();
     case CUSTOM:
     default:
       break;
@@ -209,7 +166,7 @@ make_prediction(uint32_t pc)
     case GSHARE:
       return predict_gshare(pc);
     case TOURNAMENT:
-      return predict_tournament(pc);
+      // return predict_tournament(pc);
     case CUSTOM:
     default:
       break;
@@ -231,7 +188,7 @@ train_predictor(uint32_t pc, uint8_t outcome)
     case GSHARE:
       train_gshare(pc, outcome);
     case TOURNAMENT:
-      train_tournament(pc, outcome);
+      // train_tournament(pc, outcome);
     case CUSTOM:
     default:
       break;
