@@ -76,21 +76,20 @@ get_prediction_from_state(int state)
 //             gshare                 //
 //------------------------------------//
 
-// NOTE: Does this change?
-#define PATTERN_HISTORY_TABLE_SIZE 1024
+// There can be at most 32 bits of gshare --> 2^32 = 4294967296, 2^16 = 65536
+#define PATTERN_HISTORY_TABLE_SIZE 65536
 uint32_t pattern_history_table[PATTERN_HISTORY_TABLE_SIZE];
 uint32_t gshare_ghr;
 
 // Returns the the pattern history table index by performing
-// ( (gshare_ghr ^ pc) & ((2^ghistoryBits)-1) ) % PHT_SIZE. This ensures that only
-// ghistoryBits are used. NOTE: Computes the index by modding by the
-// PATTERN_HISTORY_TABLE_SIZE, is this correct?
+// ( (gshare_ghr ^ pc) & ((2^ghistoryBits)-1) ). This ensures that only
+// ghistoryBits are used.
 // 
 uint32_t
 get_pattern_history_table_index(uint32_t pc)
 {
   uint32_t mask = pow(2, ghistoryBits) - 1;
-  return ((gshare_ghr ^ pc) & mask) % PATTERN_HISTORY_TABLE_SIZE;
+  return ((gshare_ghr ^ pc) & mask);
 }
 
 // Computes the index in the PHT for this PC, and updates the state at that
@@ -99,7 +98,7 @@ get_pattern_history_table_index(uint32_t pc)
 void
 train_gshare_PHT(uint32_t pc, uint8_t outcome)
 {
-  int index = get_pattern_history_table_index(pc);
+  uint32_t index = get_pattern_history_table_index(pc);
   int current_state = pattern_history_table[index];
   int new_state = get_new_state(current_state, outcome);
   pattern_history_table[index] = new_state;
@@ -130,7 +129,7 @@ init_gshare()
 uint8_t 
 predict_gshare(uint32_t pc) 
 {
-  int index = get_pattern_history_table_index(pc);
+  uint32_t index = get_pattern_history_table_index(pc);
   int current_state = pattern_history_table[index];
   return get_prediction_from_state(current_state);
 }
@@ -148,14 +147,10 @@ train_gshare(uint32_t pc, uint8_t outcome)
 //         tournament                 //
 //------------------------------------//
 
-// NOTE: Does this change?
-#define CHOICE_PREDICT_SIZE 4096
-// NOTE: Does this change?
-#define GLOBAL_PREDICT_SIZE 4096
-// NOTE: Does this change?
-#define LOCAL_HISTORY_TABLE_SIZE 1024
-// NOTE: Does this change?
-#define LOCAL_PREDICT_SIZE 1024
+#define CHOICE_PREDICT_SIZE 65536
+#define GLOBAL_PREDICT_SIZE 65536
+#define LOCAL_HISTORY_TABLE_SIZE 65536
+#define LOCAL_PREDICT_SIZE 65536
 uint32_t choice_predict[CHOICE_PREDICT_SIZE];
 uint32_t global_predict[GLOBAL_PREDICT_SIZE];
 uint32_t local_history_table[LOCAL_HISTORY_TABLE_SIZE];
@@ -173,23 +168,19 @@ get_tournament_ghr() {
 }
 
 // Returns the local history table index by performing
-// ( pc & ((2^pcIndexBits)-1) ) % LOCAL_HISTORY_TABLE_SIZE. 
+// ( pc & ((2^pcIndexBits)-1) ). 
 // This ensures that only pcIndexBits are used. 
-// NOTE: Computes the index by modding by the LOCAL_HISTORY_TABLE_SIZE size, 
-// is this correct?
 // 
 uint32_t
 get_local_history_table_index_from_pc(uint32_t pc) {
   uint32_t mask = pow(2, pcIndexBits) - 1;
   uint32_t masked_pc = pc & mask;
-  return masked_pc % LOCAL_HISTORY_TABLE_SIZE;
+  return masked_pc;
 }
 
 // Returns the local predict index by performing
-// ( local_history_table[index] & ((2^lhistoryBits)-1) ) % LOCAL_PREDICT_SIZE. 
+// ( local_history_table[index] & ((2^lhistoryBits)-1) ). 
 // This ensures that only lhistoryBits are used. 
-// NOTE: Computes the index by modding by the LOCAL_PREDICT_SIZE size, 
-// is this correct?
 // 
 uint32_t
 get_local_predict_index_from_local_history_table(uint32_t index)
@@ -197,29 +188,23 @@ get_local_predict_index_from_local_history_table(uint32_t index)
   uint32_t local_predict_index = local_history_table[index];
   uint32_t mask = pow(2, lhistoryBits) - 1;
   uint32_t masked_local_predict_index = local_predict_index & mask;
-  return masked_local_predict_index % LOCAL_PREDICT_SIZE;
+  return masked_local_predict_index;
 }
 
-// Returns the global predict index by performing
-// tournament_ghr % CHOICE_PREDICT_SIZE.
-// NOTE: Computes the index by modding by the CHOICE_PREDICT_SIZE size, 
-// is this correct?
+// Returns the global predict index which is simply the ghr with ghistoryBits used.
 // 
 uint32_t
 get_choice_predict_index_from_tournament_ghr()
 {
-  return get_tournament_ghr() % CHOICE_PREDICT_SIZE;
+  return get_tournament_ghr();
 }
 
-// Returns the global predict index by performing
-// tournament_ghr % GLOBAL_PREDICT_SIZE.
-// NOTE: Computes the index by modding by the GLOBAL_PREDICT_SIZE size, 
-// is this correct?
+// Returns the global predict index which is simply the ghr with ghistoryBits used.
 // 
 uint32_t
 get_global_predict_index_from_tournament_ghr()
 {
-  return get_tournament_ghr() % GLOBAL_PREDICT_SIZE;
+  return get_tournament_ghr();
 }
 
 // Gets the prediction for this PC and the local predictor. It first computes 
