@@ -1,10 +1,10 @@
 
 # ((3 * 2^ghistoryBits) + ghistoryBits) + ((3 * 2^ghistoryBits) + ghistoryBits) + (((2^pcIndexBits) * lhistoryBits) + (2^lhistoryBits * 3)) - ghistoryBits
 
-GHISTORYBITS = 13
-LHISTORYBITS = 10
-PCINDEXBITS = 10
 NBITCOUNTER = 4
+GHISTORYBITS = 13
+PCINDEXBITS = 10
+LHISTORYBITS = 12
 
 def global_predictor_cost():
     return (2 * (2**GHISTORYBITS)) + GHISTORYBITS

@@ -42,11 +42,11 @@
     * `((3 * 512) + 9) + ((3 * 512) + 9) + ((1024 * 10) + (1024 * 3)) - 9`
 
 * Best Configuration within 64 kilobit budget
-  * ghistoryBits = 13
-  * lhistoryBits = 10
-  * pcIndexBits = 10
   * n-bit counter = 4
-  * AVG MPR = 3.612
+  * ghistoryBits = 13
+  * pcIndexBits = 10
+  * lhistoryBits = 12
+  * AVG MPR = 3.37366666667
 * Measurements
   * Test 1
     * ghistoryBits = 9
