@@ -15,6 +15,10 @@ predictor.o: predictor.h predictor.c
 clean:
 	rm -f *.o predictor;
 
+.PHONY: test-static
+test-static: all
+	bunzip2 -kc ../traces/int_1.bz2 | ./predictor --static
+
 .PHONY: test-gshare
 test-gshare: all
 	bunzip2 -kc ../traces/int_1.bz2 | ./predictor --gshare:13
@@ -23,7 +27,12 @@ test-gshare: all
 test-tournament: all
 	bunzip2 -kc ../traces/int_1.bz2 | ./predictor --tournament:9:10:10
 
+test-custom: all
+	bunzip2 -kc ../traces/int_1.bz2 | ./predictor --custom
+
 .PHONY: test-all
 test-all: all
+	./../tests/static_testing_script.sh
 	./../tests/gshare_testing_script.sh
 	./../tests/tournament_testing_script.sh
+	./../tests/custom_testing_script.sh

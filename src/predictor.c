@@ -378,6 +378,29 @@ train_tournament(uint32_t pc, uint8_t outcome)
 }
 
 //------------------------------------//
+//             custom                 //
+//------------------------------------//
+
+// 
+void 
+init_custom() 
+{
+
+}
+
+uint8_t 
+predict_custom(uint32_t pc) 
+{
+  return TAKEN;
+}
+
+void
+train_custom(uint32_t pc, uint8_t outcome)
+{
+
+}
+
+//------------------------------------//
 //        Predictor Functions         //
 //------------------------------------//
 
@@ -393,6 +416,7 @@ init_predictor()
     case TOURNAMENT:
       init_tournament();
     case CUSTOM:
+      init_custom();
     default:
       break;
   }
@@ -414,6 +438,7 @@ make_prediction(uint32_t pc)
     case TOURNAMENT:
       return predict_tournament(pc);
     case CUSTOM:
+      return predict_custom(pc);
     default:
       break;
   }
@@ -436,6 +461,7 @@ train_predictor(uint32_t pc, uint8_t outcome)
     case TOURNAMENT:
       train_tournament(pc, outcome);
     case CUSTOM:
+      train_custom(pc, outcome);
     default:
       break;
   }
