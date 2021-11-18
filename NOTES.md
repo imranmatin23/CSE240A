@@ -1,4 +1,4 @@
-# Notes and Questions
+# Notes
 
 ## Notes: static predictor
 
