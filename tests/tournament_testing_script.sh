@@ -18,3 +18,6 @@ for filename in ../traces/*; do
     bunzip2 -kc $filename | ./../src/predictor --tournament:$GHISTORYBITS:$LHISTORYBITS:$PCINDEXBITS >> $path_to_outfile
     echo "---------------------------" >> $path_to_outfile
 done
+
+export OUTFILE=$path_to_outfile
+python ../tests/average.py

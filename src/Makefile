@@ -17,18 +17,18 @@ clean:
 
 .PHONY: test-static
 test-static: all
-	bunzip2 -kc ../traces/int_1.bz2 | ./predictor --static
+	./../tests/static_testing_script.sh
 
 .PHONY: test-gshare
 test-gshare: all
-	bunzip2 -kc ../traces/int_1.bz2 | ./predictor --gshare:13
+	./../tests/gshare_testing_script.sh
 
 .PHONY: test-tournament
 test-tournament: all
-	bunzip2 -kc ../traces/int_1.bz2 | ./predictor --tournament:9:10:10
+	./../tests/tournament_testing_script.sh
 
 test-custom: all
-	bunzip2 -kc ../traces/int_1.bz2 | ./predictor --custom
+	./../tests/custom_testing_script.sh
 
 .PHONY: test-all
 test-all: all

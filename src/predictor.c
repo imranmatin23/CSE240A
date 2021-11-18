@@ -383,8 +383,8 @@ train_tournament(uint32_t pc, uint8_t outcome)
 
 // STATE RELATED CODE
 #define CUSTOM_MIN_STATE 0
-#define CUSTOM_MAX_STATE 3
-#define CUSTOM_INITIAL_STATE 1
+#define CUSTOM_MAX_STATE 7
+#define CUSTOM_INITIAL_STATE 3
 
 int
 custom_increment_state(int state)
