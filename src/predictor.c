@@ -381,23 +381,68 @@ train_tournament(uint32_t pc, uint8_t outcome)
 //             custom                 //
 //------------------------------------//
 
-// 
+#define CUSTOM_MIN_STATE 0
+#define CUSTOM_MAX_STATE 7
+#define CUSTOM_INITIAL_STATE 3
+
+// 2^16 = 65536
+#define CUSTOM_BRANCH_HISTORY_TABLE_SIZE 65536
+uint32_t custom_branch_history_table[CUSTOM_BRANCH_HISTORY_TABLE_SIZE];
+
+int
+custom_increment_state(int state)
+{
+  if (state == CUSTOM_MAX_STATE) { return state; }
+  return state + 1;
+}
+
+int
+custom_decrement_state(int state)
+{
+  if (state == CUSTOM_MIN_STATE) { return state; }
+  return state - 1;
+}
+
+int 
+custom_get_new_state(int state, int outcome) 
+{
+  if (outcome == TAKEN) { return custom_increment_state(state); } 
+  return custom_decrement_state(state);
+}
+
+uint8_t
+custom_get_prediction_from_state(int state)
+{
+  if (state < (CUSTOM_MAX_STATE + 1) / 2) { return NOTTAKEN; } 
+  return TAKEN;
+}
+
 void 
 init_custom() 
 {
-
+  for(int i = 0; i < CUSTOM_BRANCH_HISTORY_TABLE_SIZE; ++i) {
+     custom_branch_history_table[i] = CUSTOM_INITIAL_STATE;
+  }
 }
 
 uint8_t 
 predict_custom(uint32_t pc) 
 {
-  return TAKEN;
+  uint32_t mask = pow(2, 10) - 1;
+  uint32_t index = pc & mask;
+  int current_state = custom_branch_history_table[index];
+  return current_state;
 }
 
 void
 train_custom(uint32_t pc, uint8_t outcome)
 {
-
+  uint32_t mask = pow(2, 10) - 1;
+  uint32_t index = pc & mask;
+  int current_state = custom_branch_history_table[index];
+  int new_state = custom_get_new_state(current_state, outcome);
+  custom_branch_history_table[index] = new_state;
+  // printf("Index: %lu, Current State: %d, New State: %d\n", (unsigned long) index, current_state, new_state);
 }
 
 //------------------------------------//
