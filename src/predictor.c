@@ -381,10 +381,17 @@ train_tournament(uint32_t pc, uint8_t outcome)
 //             custom                 //
 //------------------------------------//
 
-// STATE RELATED CODE
+// CONSTANTS (2^16 = 65536)
 #define CUSTOM_MIN_STATE 0
-#define CUSTOM_MAX_STATE 7
-#define CUSTOM_INITIAL_STATE 3
+#define CUSTOM_MAX_STATE 15
+#define CUSTOM_INITIAL_STATE 7
+#define GHISTORYBITS 13
+#define PCINDEXBITS 10
+#define LHISTORYBITS 10
+#define CUSTOM_CHOICE_PREDICT_SIZE 65536
+#define CUSTOM_GLOBAL_PREDICT_SIZE 65536
+#define CUSTOM_LOCAL_HISTORY_TABLE_SIZE 65536
+#define CUSTOM_LOCAL_PREDICT_SIZE 65536
 
 int
 custom_increment_state(int state)
@@ -416,14 +423,6 @@ custom_get_prediction_from_state(int state)
 
 // PREDICTOR RELATED CODE
 
-// 2^16 = 65536
-#define CUSTOM_CHOICE_PREDICT_SIZE 65536
-#define CUSTOM_GLOBAL_PREDICT_SIZE 65536
-#define CUSTOM_LOCAL_HISTORY_TABLE_SIZE 65536
-#define CUSTOM_LOCAL_PREDICT_SIZE 65536
-#define GHISTORYBITS 9
-#define PCINDEXBITS 10
-#define LHISTORYBITS 10
 uint32_t custom_choice_predict[CUSTOM_CHOICE_PREDICT_SIZE];
 uint32_t custom_global_predict[CUSTOM_GLOBAL_PREDICT_SIZE];
 uint32_t custom_local_history_table[CUSTOM_LOCAL_HISTORY_TABLE_SIZE];

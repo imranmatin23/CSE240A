@@ -40,3 +40,53 @@
     * `((3 * 2^ghistoryBits) + ghistoryBits) + ((3 * 2^ghistoryBits) + ghistoryBits) + (((2^pcIndexBits) * lhistoryBits) + (2^lhistoryBits * 3)) - ghistoryBits`
     * `((3 * 2^9) + 9) + ((3 * 2^9) + 9) + (((2^10) * 10) + (2^10 * 3)) - 9`
     * `((3 * 512) + 9) + ((3 * 512) + 9) + ((1024 * 10) + (1024 * 3)) - 9`
+
+* Best Configuration within 64 kilobit budget
+  * ghistoryBits = 13
+  * lhistoryBits = 10
+  * pcIndexBits = 10
+  * n-bit counter = 4
+  * AVG MPR = 3.612
+* Measurements
+  * Test 1
+    * ghistoryBits = 9
+    * lhistoryBits = 10
+    * pcIndexBits = 10
+    * n-bit counter = 2
+    * AVG MPR = 5.427
+  * Test 2
+    * ghistoryBits = 9
+    * lhistoryBits = 10
+    * pcIndexBits = 10
+    * n-bit counter = 3
+    * AVG MPR = 4.5665
+  * Test 3
+    * ghistoryBits = 9
+    * lhistoryBits = 10
+    * pcIndexBits = 10
+    * n-bit counter = 4
+    * AVG MPR = 4.4765
+  * Test 4
+    * ghistoryBits = 9
+    * lhistoryBits = 10
+    * pcIndexBits = 10
+    * n-bit counter = 5
+    * AVG MPR = 4.48116666667
+  * Test 5
+    * ghistoryBits = 9
+    * lhistoryBits = 10
+    * pcIndexBits = 10
+    * n-bit counter = 6
+    * AVG MPR = 4.49933333333
+  * Test 6
+    * ghistoryBits = 9
+    * lhistoryBits = 10
+    * pcIndexBits = 10
+    * n-bit counter = 7
+    * AVG MPR = 4.51133333333
+  * Test N
+    * ghistoryBits = 0
+    * lhistoryBits = 0
+    * pcIndexBits = 0
+    * n-bit counter = 0
+    * AVG MPR = 0.0

@@ -1,0 +1,36 @@
+Testing the custom predictor on all test files...
+---------------------------
+---------------------------
+---------------------------
+---------------------------
+Test File: ../traces/fp_1.bz2
+Branches:           1546797
+Incorrect:            15232
+Misprediction Rate:   0.985
+---------------------------
+Test File: ../traces/fp_2.bz2
+Branches:           2422049
+Incorrect:            74341
+Misprediction Rate:   3.069
+---------------------------
+Test File: ../traces/int_1.bz2
+Branches:           3771697
+Incorrect:           329972
+Misprediction Rate:   8.749
+---------------------------
+Test File: ../traces/int_2.bz2
+Branches:           3755315
+Incorrect:            14053
+Misprediction Rate:   0.374
+---------------------------
+Test File: ../traces/mm_1.bz2
+Branches:           3014850
+Incorrect:            48207
+Misprediction Rate:   1.599
+---------------------------
+Test File: ../traces/mm_2.bz2
+Branches:           2563897
+Incorrect:           176801
+Misprediction Rate:   6.896
+---------------------------
+Average Misprediction Rate: 3.612
