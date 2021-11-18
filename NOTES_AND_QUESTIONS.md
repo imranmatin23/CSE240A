@@ -44,9 +44,9 @@
 * Best Configuration within 64 kilobit budget
   * n-bit counter = 4
   * ghistoryBits = 13
-  * pcIndexBits = 10
-  * lhistoryBits = 12
-  * AVG MPR = 3.37366666667
+  * pcIndexBits = 11
+  * lhistoryBits = 10
+  * AVG MPR = 3.29966666667
 * Measurements
   * Test 1
     * ghistoryBits = 9
