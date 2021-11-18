@@ -15,6 +15,10 @@ predictor.o: predictor.h predictor.c
 clean:
 	rm -f *.o predictor;
 
+.PHONY: cost
+cost:
+	python ./../tests/cost.py
+
 .PHONY: test-static
 test-static: all
 	./../tests/static_testing_script.sh
