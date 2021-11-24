@@ -1,6 +1,3 @@
-
-# ((3 * 2^ghistoryBits) + ghistoryBits) + ((3 * 2^ghistoryBits) + ghistoryBits) + (((2^pcIndexBits) * lhistoryBits) + (2^lhistoryBits * 3)) - ghistoryBits
-
 NBITCOUNTER = 2
 GHISTORYBITS = 13
 PCINDEXBITS = 11
