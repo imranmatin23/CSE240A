@@ -383,8 +383,8 @@ train_tournament(uint32_t pc, uint8_t outcome)
 
 // CONSTANTS (2^16 = 65536)
 #define CUSTOM_MIN_STATE 0
-#define CUSTOM_MAX_STATE 15
-#define CUSTOM_INITIAL_STATE 7
+#define CUSTOM_MAX_STATE 3
+#define CUSTOM_INITIAL_STATE 1 
 #define GHISTORYBITS 13
 #define PCINDEXBITS 11
 #define LHISTORYBITS 11

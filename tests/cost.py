@@ -1,19 +1,19 @@
 
 # ((3 * 2^ghistoryBits) + ghistoryBits) + ((3 * 2^ghistoryBits) + ghistoryBits) + (((2^pcIndexBits) * lhistoryBits) + (2^lhistoryBits * 3)) - ghistoryBits
 
-NBITCOUNTER = 4
+NBITCOUNTER = 2
 GHISTORYBITS = 13
 PCINDEXBITS = 11
 LHISTORYBITS = 11
 
 def global_predictor_cost():
-    return (2 * (2**GHISTORYBITS)) + GHISTORYBITS
+    return (NBITCOUNTER * (2**GHISTORYBITS)) + GHISTORYBITS
 
 def local_predictor_cost():
     return ((2**PCINDEXBITS) * LHISTORYBITS) + ((2**LHISTORYBITS) * NBITCOUNTER)
 
 def choice_predictor_cost():
-    return (2 * (2**GHISTORYBITS)) + GHISTORYBITS
+    return (NBITCOUNTER * (2**GHISTORYBITS)) + GHISTORYBITS
 
 def total_cost():
     return global_predictor_cost() + local_predictor_cost() + choice_predictor_cost() - GHISTORYBITS
